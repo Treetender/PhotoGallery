@@ -25,7 +25,6 @@ public class FlickrFetcher {
     private static final String METHOD_GET_RECENT = "flickr.photos.getRecent";
     private static final String PARAM_EXTRAS = "extras";
     private static final String EXTRA_SMALL_URL = "url_s";
-    
     private static final String XML_PHOTO_TAG = "photo";
 
     byte[] getUrlBytes(String urlspec) throws IOException {
@@ -82,7 +81,7 @@ public class FlickrFetcher {
         return new String(getUrlBytes(urlspec));
     }
 
-    public void fetchItems() {
+    public ArrayList<GalleryItem> fetchItems() {
         ArrayList<GalleryItem> items = new ArrayList<GalleryItem>();
         
         try {
@@ -106,6 +105,9 @@ public class FlickrFetcher {
         }
         catch (XmlPullParserException xe) {
             Log.e(TAG, "Failed to parse items", xe);
+        }
+        finally {
+            return items;
         }
     }
 }
