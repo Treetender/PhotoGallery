@@ -13,6 +13,7 @@ import android.widget.GridView;
 import java.io.IOException;
 import java.util.ArrayList;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 
 /**
  * Created by treetender on 4/5/15.
@@ -21,6 +22,7 @@ public class PhotoGalleryFragment extends Fragment {
     private static final String TAG = "PhotoGalleryFragment";
     GridView mGridView;
     ArrayList<GalleryItem> mItems;
+    ThumbnailDownloader<ImageView> mThumbnailThread;
 
     private class FetchItemsTask extends AsyncTask<Void, Void, ArrayList<GalleryItem>> {
         @Override
@@ -41,7 +43,23 @@ public class PhotoGalleryFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         new FetchItemsTask().execute();
+        
+        mThumbnailThread = new ThumbnailDownloader<ImageView>();
+        mThumbnailThread.start();
+        mThumbnailThread.getLooper();
+        Log.i(TAG, "Background Thread Started");
     }
+
+    @Override
+    public void onDestroy()
+    {
+        // TODO: Implement this method
+        super.onDestroy();
+        mThumbnailThread.quit();
+        Log.i(TAG, "Background Thread Destroyed");
+    }
+    
+    
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -57,15 +75,31 @@ public class PhotoGalleryFragment extends Fragment {
             return;
             
         if(mItems != null) {
-            mGridView.setAdapter
-            (
-                new ArrayAdapter<GalleryItem>(getActivity(), 
-                                              android.R.layout.simple_gallery_item, 
-                                              mItems)
-            );
+            mGridView.setAdapter(new GalleryAdapter(mItems));
         }
         else {
             mGridView.setAdapter(null);
+        }
+    }
+    private class GalleryAdapter extends ArrayAdapter<GalleryItem>{
+        public GalleryAdapter(ArrayList<GalleryItem> items) {
+            super(getActivity(), 0, items);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            if(convertView == null) {
+                convertView = getActivity().getLayoutInflater()
+                    .inflate(R.layout.gallery_item, parent, false);
+            } 
+            ImageView img = (ImageView)convertView.findViewById(R.id.gallery_item_imageView);
+            img.setImageResource(android.R.drawable.gallery_thumb);
+            
+            GalleryItem item = getItem(position);
+            mThumbnailThread.queueThumbnail(img, item.getUrl());
+            
+            return convertView;
         }
     }
 }
