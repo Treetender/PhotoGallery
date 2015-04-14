@@ -1,15 +1,17 @@
 package com.bignerdranch.android.photogallery;
-import android.os.HandlerThread;
-import android.util.Log;
-import android.os.Handler;
-import java.util.Map;
-import java.util.Collections;
-import java.util.HashMap;
-import android.os.Message;
-import java.io.IOException;
+
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.annotation.SuppressLint;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
+import android.util.Log;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ThumbnailDownloader<Token> extends HandlerThread {
     private static final String TAG = "ThumbnailDownloader";
@@ -26,10 +28,10 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
     public void setListener(Listener<Token> listener) {
         mListener = listener;
     }
-    
-    
-    public ThumbnailDownloader() {
+
+    public ThumbnailDownloader(Handler responseHandler){
         super(TAG);
+        mResponseHandler = responseHandler;
     }
     
     public void queueThumbnail(Token token, String url) {
@@ -51,22 +53,34 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
                 }
             }
         };
-        
+    }
+
+    public void clearQueue() {
+        mHandler.removeMessages(MESSAGE_DOWNLOAD);
+        requestMap.clear();
     }
     
-    private void handleRequest(Token token) {
+    private void handleRequest(final Token token) {
         try {
             final String url = requestMap.get(token);
             if (url == null) return;
             
             byte[] bitmapBytes = new FlickrFetcher().getUrlBytes(url);
-            Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+            final Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
             Log.i(TAG, "Bitmap Created");
+            
+            mResponseHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(!requestMap.get(token).equals(url))
+                        return;
+                    requestMap.remove(token);
+                    mListener.onDownloadedThumbnail(token, bitmap);
+                }
+            });
         }
         catch(IOException ioe) {
             Log.e(TAG, "Failed to download image", ioe);
         }
     }
-    
-    
 }

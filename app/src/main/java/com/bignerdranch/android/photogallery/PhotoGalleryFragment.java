@@ -1,19 +1,20 @@
 package com.bignerdranch.android.photogallery;
 
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridView;
-
-import java.io.IOException;
-import java.util.ArrayList;
 import android.widget.ArrayAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
+
+import java.util.ArrayList;
 
 /**
  * Created by treetender on 4/5/15.
@@ -44,7 +45,15 @@ public class PhotoGalleryFragment extends Fragment {
         setRetainInstance(true);
         new FetchItemsTask().execute();
         
-        mThumbnailThread = new ThumbnailDownloader<ImageView>();
+        mThumbnailThread = new ThumbnailDownloader<ImageView>(new Handler());
+        mThumbnailThread.setListener(new ThumbnailDownloader.Listener<ImageView>() {
+            @Override
+            public void onDownloadedThumbnail(ImageView imageView, Bitmap bitmap) {
+                if(isVisible()) {
+                    imageView.setImageBitmap(bitmap);
+                }
+            }
+        });
         mThumbnailThread.start();
         mThumbnailThread.getLooper();
         Log.i(TAG, "Background Thread Started");
@@ -58,8 +67,12 @@ public class PhotoGalleryFragment extends Fragment {
         mThumbnailThread.quit();
         Log.i(TAG, "Background Thread Destroyed");
     }
-    
-    
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mThumbnailThread.clearQueue();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
