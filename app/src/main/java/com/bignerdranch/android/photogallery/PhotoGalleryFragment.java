@@ -24,8 +24,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.SearchView;
-
+import android.support.v7.widget.SearchView;
 import java.util.ArrayList;
 
 /**
@@ -127,7 +126,8 @@ public class PhotoGalleryFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_item_search:
-                getActivity().onSearchRequested();
+                if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
+                    getActivity().onSearchRequested();
                 return true;
             case R.id.menu_item_clear:
                 PreferenceManager.getDefaultSharedPreferences(getActivity())
