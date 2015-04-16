@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">PhotoGallery</string>
+    <string name="search">Search</string>
+    <string name="clear_search">Clear Search</string>
+    <string name="search_hint">Search Flickr</string>
+    <string name="title_activity_photo_gallery">Photo Gallery</string>
 </resources>

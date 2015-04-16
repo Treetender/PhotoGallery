@@ -20,6 +20,7 @@ import java.util.ArrayList;
  */
 public class FlickrFetcher {
     public static final String TAG = "FlickrFetcher";
+    public static final String PREF_SEARCH_QUERY = "searchQuery";
 
     private static final String API_KEY = "558d77f708dd3a379603984bf599623a";
     private static final String ENDPOINT = "https://api.flickr.com/services/rest/";
