@@ -3,7 +3,6 @@ package com.bignerdranch.android.photogallery;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.SearchManager;
-import android.app.SearchableInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,6 +13,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -116,11 +116,10 @@ public class PhotoGalleryFragment extends Fragment {
         inflater.inflate(R.menu.fragment_photo_gallery, menu);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             MenuItem searchItem = menu.findItem(R.id.menu_item_search);
-            SearchView searchView = (SearchView)searchItem.getActionView();
+            SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
             SearchManager searchManager = (SearchManager)getActivity().getSystemService(Context.SEARCH_SERVICE);
-            ComponentName name = getActivity().getComponentName();
-            SearchableInfo searchableInfo = searchManager.getSearchableInfo(name);
-            searchView.setSearchableInfo(searchableInfo);
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(
+                    new ComponentName(getActivity().getApplicationContext(), PhotoGalleryActivity.class)));
         }
     }
 
